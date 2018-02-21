@@ -11,7 +11,7 @@ import java.lang.reflect.Modifier;
  * @author kiva
  */
 
-final class ReflectionHelper {
+public final class ReflectionHelper {
     /**
      * Get a class type of a class, which may cause its static-initialization
      *
@@ -27,7 +27,7 @@ final class ReflectionHelper {
 
     /**
      * Convert object arrays into elements' class type arrays.
-     * If encountered {@code null}, use {@link NullPointer}'s class type instead.
+     * If encountered {@code null}, use {@link Nothing}'s class type instead.
      *
      * @see Object#getClass()
      */
@@ -39,7 +39,7 @@ final class ReflectionHelper {
         Class<?>[] types = new Class<?>[args.length];
         for (int i = 0; i < args.length; ++i) {
             Object arg = args[i];
-            types[i] = arg == null ? NullPointer.class : arg.getClass();
+            types[i] = arg == null ? Nothing.class : arg.getClass();
         }
         return types;
     }
@@ -50,7 +50,7 @@ final class ReflectionHelper {
      * @param type Class type that may be primitive class type
      * @return Wrapped class type
      */
-    static Class<?> wrapType(Class<?> type) {
+    public static Class<?> wrapType(Class<?> type) {
         if (type.isPrimitive()) {
             if (type == int.class) {
                 return Integer.class;
@@ -193,7 +193,7 @@ final class ReflectionHelper {
     }
 
     private static boolean isSignatureAcceptable(Class<?> expected, Class<?> given) {
-        return given == NullPointer.class ||
+        return given == Nothing.class ||
                 wrapType(expected).isAssignableFrom(wrapType(given));
     }
 
@@ -205,7 +205,7 @@ final class ReflectionHelper {
      * @return Accessible object
      */
     @SuppressWarnings("unchecked")
-    static <T extends AccessibleObject> T makeAccessible(T object) {
+    public static <T extends AccessibleObject> T makeAccessible(T object) {
         if (object == null) {
             return null;
         }

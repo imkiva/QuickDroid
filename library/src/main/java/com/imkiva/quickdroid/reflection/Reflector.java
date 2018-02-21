@@ -258,7 +258,6 @@ public class Reflector {
     @Override
     public boolean equals(Object obj) {
         return obj instanceof Reflector && target.equals(((Reflector) obj).get());
-
     }
 
     /**

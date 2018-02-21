@@ -1,6 +1,8 @@
 package com.imkiva.quickdroid;
 
 import android.app.Application;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.widget.Toast;
 
 import com.imkiva.quickdroid.functional.QSupplier;
@@ -30,6 +32,50 @@ public final class QuickApp {
                 .call("currentActivityThread")
                 .call("getApplication")
                 .get();
+    }
+
+    /**
+     * Get app's version code defined in AndroidManifest.xml
+     *
+     * @return version code
+     */
+    public static int getAppVersionCode() {
+        return getPackageInfo().versionCode;
+    }
+
+    /**
+     * Get app's version name defined in AndroidManifest.xml
+     *
+     * @return version name
+     */
+    public static String getAppVersionName() {
+        return getPackageInfo().versionName;
+    }
+
+    /**
+     * Get app's package info
+     *
+     * @return package info
+     * @see QuickApp#getPackageInfo(int)
+     */
+    public static PackageInfo getPackageInfo() {
+        return getPackageInfo(0);
+    }
+
+    /**
+     * Get app's package info
+     *
+     * @return package info
+     */
+    public static PackageInfo getPackageInfo(int flags) {
+        Application application = getApplication();
+        PackageManager packageManager = application.getPackageManager();
+        try {
+            return packageManager.getPackageInfo(application.getPackageName(), flags);
+
+        } catch (PackageManager.NameNotFoundException e) {
+            throw new IllegalStateException("This should never happen.");
+        }
     }
 
     /**
