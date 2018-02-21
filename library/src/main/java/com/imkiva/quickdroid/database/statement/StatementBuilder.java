@@ -17,7 +17,7 @@ import java.util.Arrays;
 
 public class StatementBuilder {
     private final StringBuilder statement = new StringBuilder();
-    private StatementType statementType = StatementType.UNKNOWN;
+    private StatementType statementType = StatementType.INITIAL;
     private TableData table;
 
     StatementBuilder(TableData table) {
@@ -25,7 +25,7 @@ public class StatementBuilder {
     }
 
     public StatementBuilder createTable() {
-        state(StatementType.UNKNOWN, StatementType.CREATE_TABLE);
+        switchState(StatementType.INITIAL, StatementType.CREATE_TABLE);
         statement.append("CREATE TABLE IF NOT EXISTS ")
                 .append("'").append(table.tableName).append("'")
                 .append(" (");
@@ -68,7 +68,7 @@ public class StatementBuilder {
     }
 
     public StatementBuilder insertInto(Object newValue) {
-        state(StatementType.UNKNOWN, StatementType.INSERT);
+        switchState(StatementType.INITIAL, StatementType.INSERT);
         statement.append("INSERT INTO '")
                 .append(table.tableName).append("' ")
                 .append("VALUES(");
@@ -104,7 +104,7 @@ public class StatementBuilder {
     }
 
     public StatementBuilder delete() {
-        state(StatementType.UNKNOWN, StatementType.DELETE);
+        switchState(StatementType.INITIAL, StatementType.DELETE);
         statement.append("DELETE FROM '")
                 .append(table.tableName)
                 .append("' ");
@@ -112,7 +112,7 @@ public class StatementBuilder {
     }
 
     public StatementBuilder select() {
-        state(StatementType.UNKNOWN, StatementType.SELECT);
+        switchState(StatementType.INITIAL, StatementType.SELECT);
         statement.append("SELECT * FROM '")
                 .append(table.tableName)
                 .append("' ");
@@ -120,7 +120,7 @@ public class StatementBuilder {
     }
 
     public StatementBuilder update(Object newValue) {
-        state(StatementType.UNKNOWN, StatementType.UPDATE);
+        switchState(StatementType.INITIAL, StatementType.UPDATE);
         statement.append("UPDATE '")
                 .append(table.tableName)
                 .append("' SET ");
@@ -143,6 +143,8 @@ public class StatementBuilder {
 
     /****** condition *******/
     public StatementBuilder where(@NonNull String sql, @NonNull Object... args) {
+        ensure(StatementType.WHERE, StatementType.DELETE, StatementType.SELECT, StatementType.UPDATE);
+
         if (args.length == 0) {
             statement.append(" WHERE ").append(sql);
             return this;
@@ -163,23 +165,25 @@ public class StatementBuilder {
     }
 
     /****** helpers *******/
-    private void ensure(StatementType... expectedTypes) {
-        if (expectedTypes.length == 0) {
+    private void ensure(StatementType newType, StatementType... expectedCurrentTypes) {
+        if (expectedCurrentTypes.length == 0) {
             return;
         }
-        for (StatementType expectedType : expectedTypes) {
+        for (StatementType expectedType : expectedCurrentTypes) {
             if (statementType == expectedType) {
                 return;
             }
         }
 
-        throw new DatabaseMalformedException(Arrays.toString(expectedTypes)
+        throw new DatabaseMalformedException(newType.name()
                 + " cannot be used in "
-                + statementType.name());
+                + statementType.name()
+                + ", expected "
+                + Arrays.toString(expectedCurrentTypes));
     }
 
-    private void state(StatementType expectedType, StatementType newType) {
-        ensure(expectedType);
+    private void switchState(StatementType expectedCurrentType, StatementType newType) {
+        ensure(newType, expectedCurrentType);
         if (newType != null) {
             this.statementType = newType;
         }

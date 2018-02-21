@@ -5,10 +5,12 @@ package com.imkiva.quickdroid.database.statement;
  */
 
 public enum StatementType {
-    UNKNOWN,
+    INITIAL,
     CREATE_TABLE,
     INSERT,
     DELETE,
     UPDATE,
     SELECT,
+
+    WHERE,
 }

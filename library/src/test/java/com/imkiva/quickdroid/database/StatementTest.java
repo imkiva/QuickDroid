@@ -1,5 +1,7 @@
 package com.imkiva.quickdroid.database;
 
+import com.imkiva.quickdroid.database.statement.Statement;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -26,5 +28,42 @@ public class StatementTest {
         }
     }
 
+    @Test
+    public void createTable() {
+        TableData tableData = TableData.parse(Person.class);
+        Statement statement = Statement.begin(tableData)
+                .createTable()
+                .end();
+        System.out.println(statement.getCode());
+    }
 
+    @Test(expected = DatabaseMalformedException.class)
+    public void callDeleteInCreateTable() {
+        TableData tableData = TableData.parse(Person.class);
+        Statement statement = Statement.begin(tableData)
+                .createTable()
+                .delete()
+                .end();
+        System.out.println(statement.getCode());
+    }
+
+    @Test(expected = DatabaseMalformedException.class)
+    public void callWhereInCreateTable() {
+        TableData tableData = TableData.parse(Person.class);
+        Statement statement = Statement.begin(tableData)
+                .createTable()
+                .where("1=1")
+                .end();
+        System.out.println(statement.getCode());
+    }
+
+    @Test
+    public void callWhereInSelect() {
+        TableData tableData = TableData.parse(Person.class);
+        Statement statement = Statement.begin(tableData)
+                .select()
+                .where("id = {0}, name = {1}", 1, "Bob")
+                .end();
+        System.out.println(statement.getCode());
+    }
 }
