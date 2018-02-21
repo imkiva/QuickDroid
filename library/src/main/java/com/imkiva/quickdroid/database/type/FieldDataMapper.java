@@ -10,7 +10,7 @@ import java.lang.reflect.Field;
 public class FieldDataMapper {
     @NonNull
     public static String mapToString(@NonNull Object object) {
-        FieldType fieldType = FieldTypeConverter.convert(object.getClass());
+        FieldType fieldType = FieldType.convert(object.getClass());
         return mapToString(fieldType, object);
     }
 

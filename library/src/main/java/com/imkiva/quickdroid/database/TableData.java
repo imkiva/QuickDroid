@@ -4,7 +4,6 @@ import android.support.annotation.NonNull;
 
 import com.imkiva.quickdroid.database.annotation.Table;
 import com.imkiva.quickdroid.database.type.FieldType;
-import com.imkiva.quickdroid.database.type.FieldTypeConverter;
 import com.imkiva.quickdroid.reflection.ReflectionHelper;
 
 import java.lang.reflect.Field;
@@ -51,10 +50,10 @@ public class TableData {
 
         for (Field field : clazz.getDeclaredFields()) {
             ReflectionHelper.makeAccessible(field);
-            if (FieldTypeConverter.shouldSkip(field)) {
+            if (FieldType.shouldSkip(field)) {
                 continue;
             }
-            if (FieldTypeConverter.isPrimaryKey(field)) {
+            if (FieldType.isPrimaryKey(field)) {
                 if (tableData.primaryKeyField != null) {
                     throw new DatabaseMalformedException("Multiple primary key is not allowed.");
                 }
@@ -74,7 +73,7 @@ public class TableData {
     }
 
     private static FieldType parseFieldType(Field field) {
-        FieldType fieldType = FieldTypeConverter.convert(field);
+        FieldType fieldType = FieldType.convert(field);
         if (fieldType == null) {
             throw new IllegalArgumentException("Field not supported due to type mismatch: "
                     + field.getName()
