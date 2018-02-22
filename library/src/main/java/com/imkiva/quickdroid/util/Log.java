@@ -9,8 +9,10 @@ import java.util.Formatter;
 import java.util.List;
 
 /**
+ * Friendly logger for Android.
+ * Printing caller's name and source file info with log message.
+ *
  * @author kiva
- * @date 2017/12/16
  */
 public final class Log {
     private static boolean LOG_ENABLED = QuickApp.isDebug();

@@ -11,10 +11,25 @@ import java.lang.reflect.Proxy;
 
 public class Reflector {
     enum TargetType {
-        OBJECT, CLASS
+        /**
+         * We are operating an {@link Object}, except {@link Class}
+         */
+        OBJECT,
+
+        /**
+         * We are operating an {@link Class}
+         */
+        CLASS
     }
 
+    /**
+     * Which object we are operating.
+     */
     private TargetType targetType;
+
+    /**
+     * The reflection target.
+     */
     private Object target;
 
     private Reflector(Object target) {

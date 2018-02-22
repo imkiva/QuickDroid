@@ -5,6 +5,17 @@ import java.lang.reflect.Method;
 import java.util.Map;
 
 /**
+ * Just like any other InvocationHandlers, but this handler paid special attention to Map.
+ * We support get or set a Map's values by calling methods that are getters or setters.
+ * <pre>
+ *     HashMap<String, Object> values = new HashMap<>();
+ *     values.put("greetingMessage", "hello world");
+ *     IGreeting greet = Reflector.on(values).fake(IGreeting.class);
+ *     String message = greet.getGreetingMessage();
+ * </pre>
+ * As you see above, {@code message} is {@code equals} to {@code "hello world"}
+ * {@inheritDoc}
+ *
  * @author kiva
  */
 
@@ -32,8 +43,10 @@ public class FakeInvocationHandler implements InvocationHandler {
                 // Pay special attention to those getters and setters
                 if (length == 0 && name.startsWith("get")) {
                     return map.get(convertPropertyName(name.substring(3)));
+
                 } else if (length == 0 && name.startsWith("is")) {
                     return map.get(convertPropertyName(name.substring(2)));
+
                 } else if (length == 1 && name.startsWith("set")) {
                     map.put(convertPropertyName(name.substring(3)), args[0]);
                     return null;
@@ -49,8 +62,10 @@ public class FakeInvocationHandler implements InvocationHandler {
 
         if (length == 0) {
             return "";
+
         } else if (length == 1) {
             return string.toLowerCase();
+
         } else {
             return string.substring(0, 1).toLowerCase() + string.substring(1);
         }
