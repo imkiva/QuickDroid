@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import com.imkiva.quickdroid.database.annotation.Table;
 import com.imkiva.quickdroid.database.type.FieldType;
 import com.imkiva.quickdroid.reflection.ReflectionHelper;
+import com.imkiva.quickdroid.util.LazySingleton;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -17,20 +18,34 @@ import java.util.Map;
 public class TableData {
     private static final HashMap<Class<?>, TableData> TABLE_DATA_CACHE = new HashMap<>(4);
 
+    private static final String MASTER_TABLE = "sqlite_master";
+    private static final LazySingleton<TableData> MASTER_TABLE_DATA = new LazySingleton<TableData>() {
+        @Override
+        protected TableData createInstance() {
+            TableData tableData = new TableData();
+            tableData.tableName = MASTER_TABLE;
+            tableData.hasPrimaryKey = false;
+            tableData.created = true;
+            return tableData;
+        }
+    };
+
     public boolean hasPrimaryKey;
     public Field primaryKeyField;
     public FieldType primaryKeyType;
     public String tableName;
     public Map<Field, FieldType> databaseItems;
+    public boolean created = false;
 
     private TableData() {
     }
 
-    public static TableData parse(@NonNull Object object) {
-        return parse(object.getClass());
+    static TableData getMasterTableData() {
+        return MASTER_TABLE_DATA.get();
     }
 
-    public static TableData parse(@NonNull Class<?> clazz) {
+    @NonNull
+    static TableData parse(@NonNull Class<?> clazz) {
         TableData tableData = TABLE_DATA_CACHE.get(clazz);
         if (tableData != null) {
             return tableData;

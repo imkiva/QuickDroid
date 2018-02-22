@@ -119,6 +119,14 @@ public class StatementBuilder {
         return this;
     }
 
+    public StatementBuilder count() {
+        switchState(StatementType.INITIAL, StatementType.SELECT);
+        statement.append("SELECT COUNT(*) FROM '")
+                .append(table.tableName)
+                .append("' ");
+        return this;
+    }
+
     public StatementBuilder update(Object newValue) {
         switchState(StatementType.INITIAL, StatementType.UPDATE);
         statement.append("UPDATE '")
@@ -143,19 +151,37 @@ public class StatementBuilder {
 
     /****** condition *******/
     public StatementBuilder where(@NonNull String sql, @NonNull Object... args) {
-        ensure(StatementType.WHERE, StatementType.DELETE, StatementType.SELECT, StatementType.UPDATE);
+        return condition("WHERE", sql, args);
+    }
 
+    public StatementBuilder and(@NonNull String sql, @NonNull Object... args) {
+        return condition("AND", sql, args);
+    }
+
+    public StatementBuilder or(@NonNull String sql, @NonNull Object... args) {
+        return condition("OR", sql, args);
+    }
+
+    private StatementBuilder condition(@NonNull String conditionName,
+                                       @NonNull String sql, @NonNull Object... args) {
+        ensure(StatementType.WHERE,
+                StatementType.DELETE, StatementType.SELECT, StatementType.UPDATE);
+        statement.append(" ").append(conditionName).append(" ");
         if (args.length == 0) {
-            statement.append(" WHERE ").append(sql);
+            statement.append(sql);
             return this;
         }
 
+        return formatArgs(sql, args);
+    }
+
+    private StatementBuilder formatArgs(@NonNull String sql, @NonNull Object... args) {
         String[] argStrings = new String[args.length];
         for (int i = 0; i < args.length; ++i) {
             argStrings[i] = FieldDataMapper.mapToString(args[i]);
         }
-        statement.append(" WHERE ")
-                .append(MessageFormat.format(sql, (Object[]) argStrings));
+
+        statement.append(MessageFormat.format(sql, (Object[]) argStrings));
         return this;
     }
 

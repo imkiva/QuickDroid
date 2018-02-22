@@ -7,7 +7,7 @@ package com.imkiva.quickdroid.util;
 public abstract class LazySingleton<T> implements Singleton<T> {
     private T instance;
 
-    abstract T createInstance();
+    protected abstract T createInstance();
 
     @Override
     public final T get() {
