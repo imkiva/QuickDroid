@@ -18,7 +18,8 @@ public final class QuickDatabase {
 
     private QuickDatabase(DatabaseConfig databaseConfig) {
         this.databaseConfig = databaseConfig;
-        this.databaseOperator = new DatabaseOperator(databaseConfig);
+        this.databaseOperator = new DatabaseOperator(QuickApp.getApplication().getApplicationContext(),
+                databaseConfig);
     }
 
     public SQLiteDatabase getDatabase() {

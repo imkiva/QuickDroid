@@ -1,12 +1,12 @@
 package com.imkiva.quickdroid.database;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.imkiva.quickdroid.QuickApp;
 import com.imkiva.quickdroid.database.statement.Statement;
 import com.imkiva.quickdroid.database.statement.StatementBuilder;
 
@@ -19,11 +19,9 @@ public class DatabaseOperator extends SQLiteOpenHelper {
     private boolean clearTablesWhenUpdated;
     private OnDatabaseUpgradedListener onDatabaseUpgradedListener;
 
-    public DatabaseOperator(DatabaseConfig databaseConfig) {
-        super(QuickApp.getApplication().getApplicationContext(),
-                databaseConfig.getDatabaseName(),
-                null,
-                databaseConfig.getDatabaseVersion());
+    public DatabaseOperator(Context context, DatabaseConfig databaseConfig) {
+        super(context, databaseConfig.getDatabaseName(),
+                null, databaseConfig.getDatabaseVersion());
         setConfig(databaseConfig);
     }
 
