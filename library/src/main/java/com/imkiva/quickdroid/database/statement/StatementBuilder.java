@@ -1,6 +1,7 @@
 package com.imkiva.quickdroid.database.statement;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.imkiva.quickdroid.database.DatabaseMalformedException;
 import com.imkiva.quickdroid.database.TableData;
@@ -67,7 +68,7 @@ public class StatementBuilder {
         statement.append(",");
     }
 
-    public StatementBuilder insertInto(Object newValue) {
+    public StatementBuilder insert(Object newValue) {
         switchState(StatementType.INITIAL, StatementType.INSERT);
         statement.append("INSERT INTO '")
                 .append(table.tableName).append("' ")
@@ -150,24 +151,24 @@ public class StatementBuilder {
 
 
     /****** condition *******/
-    public StatementBuilder where(@NonNull String sql, @NonNull Object... args) {
+    public StatementBuilder where(@NonNull String sql, @Nullable Object... args) {
         return condition("WHERE", sql, args);
     }
 
-    public StatementBuilder and(@NonNull String sql, @NonNull Object... args) {
+    public StatementBuilder and(@NonNull String sql, @Nullable Object... args) {
         return condition("AND", sql, args);
     }
 
-    public StatementBuilder or(@NonNull String sql, @NonNull Object... args) {
+    public StatementBuilder or(@NonNull String sql, @Nullable Object... args) {
         return condition("OR", sql, args);
     }
 
     private StatementBuilder condition(@NonNull String conditionName,
-                                       @NonNull String sql, @NonNull Object... args) {
+                                       @NonNull String sql, @Nullable Object... args) {
         ensure(StatementType.WHERE,
                 StatementType.DELETE, StatementType.SELECT, StatementType.UPDATE);
         statement.append(" ").append(conditionName).append(" ");
-        if (args.length == 0) {
+        if (args == null || args.length == 0) {
             statement.append(sql);
             return this;
         }

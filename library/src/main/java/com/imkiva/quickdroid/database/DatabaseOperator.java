@@ -3,9 +3,12 @@ package com.imkiva.quickdroid.database;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.imkiva.quickdroid.QuickApp;
 import com.imkiva.quickdroid.database.statement.Statement;
+import com.imkiva.quickdroid.database.statement.StatementBuilder;
 
 import java.util.List;
 
@@ -46,16 +49,36 @@ public class DatabaseOperator extends SQLiteOpenHelper {
         return null;
     }
 
-    public void insert(Object object) {
+    public void insert(@NonNull Object object) {
+        TableData tableData = TableData.parse(object.getClass());
+        createTableIfNeed(tableData);
+        Statement statement = Statement.begin(tableData)
+                .insert(object)
+                .end();
+        exec(statement);
     }
 
-    public void update(Object object) {
+    public void update(@NonNull Object object) {
+        TableData tableData = TableData.parse(object.getClass());
+        createTableIfNeed(tableData);
+        Statement statement = Statement.begin(tableData)
+                .update(object)
+                .end();
+        exec(statement);
     }
 
-    public void delete(Object object) {
+    public void delete(@NonNull Object object) {
+        // TODO
     }
 
-    public void delete(Class<?> type, String where, Object... args) {
+    public void delete(@NonNull Class<?> type, @Nullable String where, @Nullable Object... args) {
+        TableData tableData = TableData.parse(type);
+        StatementBuilder builder = Statement.begin(tableData);
+        if (where != null) {
+            builder.where(where, args);
+        }
+        Statement statement = builder.end();
+        exec(statement);
     }
 
     private Cursor query(Statement statement) {
@@ -66,8 +89,7 @@ public class DatabaseOperator extends SQLiteOpenHelper {
         getWritableDatabase().execSQL(statement.getCode());
     }
 
-    private void createTableIfNeed(Class<?> clazz) {
-        TableData tableData = TableData.parse(clazz);
+    private void createTableIfNeed(TableData tableData) {
         if (isTableCreated(tableData)) {
             return;
         }
