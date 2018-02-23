@@ -13,17 +13,19 @@ import com.imkiva.quickdroid.database.OnDatabaseUpgradedListener;
 public final class QuickDatabase {
     public static final String DEFAULT_DATABASE_NAME = "quick_database";
 
-    private DatabaseConfig databaseConfig;
-    private DatabaseOperator databaseOperator;
+    private DatabaseOperator operator;
 
-    private QuickDatabase(DatabaseConfig databaseConfig) {
-        this.databaseConfig = databaseConfig;
-        this.databaseOperator = new DatabaseOperator(QuickApp.getApplication().getApplicationContext(),
-                databaseConfig);
+    private QuickDatabase(DatabaseConfig config) {
+        this.operator = new DatabaseOperator(QuickApp.getApplication().getApplicationContext(),
+                config);
+    }
+
+    public void setConfig(DatabaseConfig config) {
+        operator.setConfig(config);
     }
 
     public SQLiteDatabase getDatabase() {
-        return databaseOperator.getWritableDatabase();
+        return operator.getWritableDatabase();
     }
 
     public static QuickDatabase open() {
