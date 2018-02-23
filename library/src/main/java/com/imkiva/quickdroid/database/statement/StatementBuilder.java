@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.imkiva.quickdroid.database.DatabaseMalformedException;
+import com.imkiva.quickdroid.database.DatabaseOperator;
 import com.imkiva.quickdroid.database.TableData;
 import com.imkiva.quickdroid.database.type.FieldDataMapper;
 import com.imkiva.quickdroid.database.type.FieldType;
@@ -30,11 +31,12 @@ public class StatementBuilder {
                 .append("'").append(table.tableName).append("'")
                 .append(" (");
 
-        if (table.hasPrimaryKey) {
+        if (table.hasDeclaredPrimaryKey) {
             buildPrimaryKey();
         } else {
             // default primary key
-            statement.append("'quick_id' INTEGER PRIMARY KEY AUTOINCREMENT,");
+            statement.append("'").append(DatabaseOperator.DEFAULT_PRIMARY_KEY)
+                    .append("' INTEGER PRIMARY KEY AUTOINCREMENT,");
         }
 
         for (Field field : table.databaseItems.keySet()) {
@@ -73,9 +75,10 @@ public class StatementBuilder {
                 .append(table.tableName).append("' ")
                 .append("VALUES(");
 
-        if (table.hasPrimaryKey) {
+        if (table.hasDeclaredPrimaryKey) {
             switch (table.primaryKeyType) {
                 case INTEGER:
+                    // auto increment
                     statement.append("NULL,");
                     break;
                 default:
@@ -88,6 +91,7 @@ public class StatementBuilder {
             }
 
         } else {
+            // default primary key
             statement.append("NULL,");
         }
 

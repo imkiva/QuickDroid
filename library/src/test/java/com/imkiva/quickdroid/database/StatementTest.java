@@ -12,14 +12,14 @@ import org.junit.Test;
 public class StatementTest {
     @Test
     public void parseTableData() {
-        TableData tableData = TableData.parse(Person.class);
-        Assert.assertFalse(tableData.hasPrimaryKey);
+        TableData tableData = TableData.get(Person.class);
+        Assert.assertFalse(tableData.hasDeclaredPrimaryKey);
     }
 
     @Test
     public void parseTableDataPrimaryKey() {
-        TableData tableData = TableData.parse(PersonWithPrimaryKey.class);
-        Assert.assertTrue(tableData.hasPrimaryKey);
+        TableData tableData = TableData.get(PersonWithPrimaryKey.class);
+        Assert.assertTrue(tableData.hasDeclaredPrimaryKey);
         try {
             Assert.assertEquals(PersonWithPrimaryKey.class.getField("id"),
                     tableData.primaryKeyField);
@@ -30,7 +30,7 @@ public class StatementTest {
 
     @Test
     public void createTable() {
-        TableData tableData = TableData.parse(Person.class);
+        TableData tableData = TableData.get(Person.class);
         Statement statement = Statement.begin(tableData)
                 .createTable()
                 .end();
@@ -39,7 +39,7 @@ public class StatementTest {
 
     @Test(expected = DatabaseMalformedException.class)
     public void callDeleteInCreateTable() {
-        TableData tableData = TableData.parse(Person.class);
+        TableData tableData = TableData.get(Person.class);
         Statement statement = Statement.begin(tableData)
                 .createTable()
                 .delete()
@@ -49,7 +49,7 @@ public class StatementTest {
 
     @Test(expected = DatabaseMalformedException.class)
     public void callWhereInCreateTable() {
-        TableData tableData = TableData.parse(Person.class);
+        TableData tableData = TableData.get(Person.class);
         Statement statement = Statement.begin(tableData)
                 .createTable()
                 .where("1=1")
@@ -59,7 +59,7 @@ public class StatementTest {
 
     @Test
     public void callWhereInSelect() {
-        TableData tableData = TableData.parse(Person.class);
+        TableData tableData = TableData.get(Person.class);
         Statement statement = Statement.begin(tableData)
                 .select()
                 .where("id = {0}, name = {1}", 1, "Bob")

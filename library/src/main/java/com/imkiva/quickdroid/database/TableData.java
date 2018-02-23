@@ -25,13 +25,13 @@ public class TableData {
         protected TableData createInstance() {
             TableData tableData = new TableData();
             tableData.tableName = MASTER_TABLE;
-            tableData.hasPrimaryKey = false;
+            tableData.hasDeclaredPrimaryKey = false;
             tableData.created = true;
             return tableData;
         }
     };
 
-    public boolean hasPrimaryKey;
+    public boolean hasDeclaredPrimaryKey;
     public Field primaryKeyField;
     public FieldType primaryKeyType;
     public String tableName;
@@ -46,7 +46,7 @@ public class TableData {
     }
 
     @Nullable
-    static TableData get(@NonNull String tableName) {
+    static TableData searchByName(@NonNull String tableName) {
         for (TableData tableData : TABLE_DATA_CACHE.values()) {
             if (tableData.tableName.equals(tableName)) {
                 return tableData;
@@ -56,14 +56,14 @@ public class TableData {
     }
 
     @NonNull
-    static TableData parse(@NonNull Class<?> clazz) {
+    static TableData get(@NonNull Class<?> clazz) {
         TableData tableData = TABLE_DATA_CACHE.get(clazz);
         if (tableData != null) {
             return tableData;
         }
 
         tableData = new TableData();
-        tableData.hasPrimaryKey = false;
+        tableData.hasDeclaredPrimaryKey = false;
 
         Table table = clazz.getAnnotation(Table.class);
         if (table != null && table.name().trim().length() != 0) {
@@ -85,7 +85,7 @@ public class TableData {
                 }
                 tableData.primaryKeyField = field;
                 tableData.primaryKeyType = parseFieldType(field);
-                tableData.hasPrimaryKey = true;
+                tableData.hasDeclaredPrimaryKey = true;
                 continue;
             }
 
