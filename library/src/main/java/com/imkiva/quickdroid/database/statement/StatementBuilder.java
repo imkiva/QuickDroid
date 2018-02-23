@@ -9,7 +9,6 @@ import com.imkiva.quickdroid.database.type.FieldDataMapper;
 import com.imkiva.quickdroid.database.type.FieldType;
 
 import java.lang.reflect.Field;
-import java.text.MessageFormat;
 import java.util.Arrays;
 
 /**
@@ -168,21 +167,11 @@ public class StatementBuilder {
         ensure(StatementType.WHERE,
                 StatementType.DELETE, StatementType.SELECT, StatementType.UPDATE);
         statement.append(" ").append(conditionName).append(" ");
-        if (args == null || args.length == 0) {
-            statement.append(sql);
-            return this;
-        }
-
         return formatArgs(sql, args);
     }
 
-    private StatementBuilder formatArgs(@NonNull String sql, @NonNull Object... args) {
-        String[] argStrings = new String[args.length];
-        for (int i = 0; i < args.length; ++i) {
-            argStrings[i] = FieldDataMapper.mapToString(args[i]);
-        }
-
-        statement.append(MessageFormat.format(sql, (Object[]) argStrings));
+    private StatementBuilder formatArgs(@NonNull String sql, @Nullable Object... args) {
+        statement.append(StatementArgumentHelper.formatArgs(sql, args));
         return this;
     }
 

@@ -10,6 +10,8 @@ import android.support.annotation.Nullable;
 import com.imkiva.quickdroid.database.statement.Statement;
 import com.imkiva.quickdroid.database.statement.StatementBuilder;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -19,20 +21,45 @@ public class DatabaseOperator extends SQLiteOpenHelper {
     private boolean clearTablesWhenUpdated;
     private OnDatabaseUpgradedListener onDatabaseUpgradedListener;
 
-    public DatabaseOperator(Context context, DatabaseConfig databaseConfig) {
+    public DatabaseOperator(@NonNull Context context, @NonNull DatabaseConfig databaseConfig) {
         super(context, databaseConfig.getDatabaseName(),
                 null, databaseConfig.getDatabaseVersion());
         setConfig(databaseConfig);
     }
 
-    public void setConfig(DatabaseConfig config) {
-        if (config != null) {
-            this.clearTablesWhenUpdated = config.isClearTablesWhenUpdated();
-            this.onDatabaseUpgradedListener = config.getOnDatabaseUpgradedListener();
-        }
+    public void setConfig(@NonNull DatabaseConfig config) {
+        this.clearTablesWhenUpdated = config.isClearTablesWhenUpdated();
+        this.onDatabaseUpgradedListener = config.getOnDatabaseUpgradedListener();
     }
 
     public void dropAllTables() {
+        for (String tableName : getAllTables()) {
+            dropTable(tableName);
+        }
+    }
+
+    public void dropTable(@NonNull Class<?> type) {
+        TableData tableData = TableData.parse(type);
+        dropTable(tableData.tableName, tableData);
+    }
+
+    public void dropTable(@NonNull String tableName) {
+        dropTable(tableName, null);
+    }
+
+    private void dropTable(@NonNull String tableName, @Nullable TableData tableData) {
+        if (tableData == null) {
+            tableData = TableData.get(tableName);
+        }
+        if (tableData != null && tableData.created) {
+            return;
+        }
+        Statement statement = Statement
+                .rawStatement("DROP TABLE IF EXISTS {0}", tableName);
+        exec(statement);
+        if (tableData != null) {
+            tableData.created = false;
+        }
     }
 
     public <T> T select(Class<?> type) {
@@ -115,6 +142,23 @@ public class DatabaseOperator extends SQLiteOpenHelper {
         }
 
         return tableData.created;
+    }
+
+    private List<String> getAllTables() {
+        Statement statement = Statement.begin(TableData.getMasterTableData())
+                .select()
+                .where("type = {0}", "table")
+                .end();
+        try (Cursor cursor = query(statement)) {
+            cursor.moveToFirst();
+            List<String> tableNames = new ArrayList<>();
+            while (cursor.moveToNext()) {
+                tableNames.add(cursor.getString(0));
+            }
+            return tableNames;
+        } catch (Throwable ignore) {
+        }
+        return Collections.emptyList();
     }
 
     private void createTable(TableData tableData) {

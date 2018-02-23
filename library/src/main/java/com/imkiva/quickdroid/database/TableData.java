@@ -1,6 +1,7 @@
 package com.imkiva.quickdroid.database;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.imkiva.quickdroid.database.annotation.Table;
 import com.imkiva.quickdroid.database.type.FieldType;
@@ -42,6 +43,16 @@ public class TableData {
 
     static TableData getMasterTableData() {
         return MASTER_TABLE_DATA.get();
+    }
+
+    @Nullable
+    static TableData get(@NonNull String tableName) {
+        for (TableData tableData : TABLE_DATA_CACHE.values()) {
+            if (tableData.tableName.equals(tableName)) {
+                return tableData;
+            }
+        }
+        return null;
     }
 
     @NonNull
