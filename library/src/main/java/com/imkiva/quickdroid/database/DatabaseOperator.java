@@ -23,6 +23,7 @@ import java.util.List;
  * @author kiva
  */
 public class DatabaseOperator extends SQLiteOpenHelper {
+    public static final String DEFAULT_DATABASE_NAME = "quick_database";
     public static final String DEFAULT_PRIMARY_KEY = "quick_id";
 
     private boolean clearTablesWhenUpdated;
@@ -52,21 +53,6 @@ public class DatabaseOperator extends SQLiteOpenHelper {
 
     public void dropTable(@NonNull String tableName) {
         dropTable(tableName, null);
-    }
-
-    private void dropTable(@NonNull String tableName, @Nullable TableData tableData) {
-        if (tableData == null) {
-            tableData = TableData.searchByName(tableName);
-        }
-        if (tableData != null && tableData.created) {
-            return;
-        }
-        Statement statement = Statement
-                .rawStatement("DROP TABLE IF EXISTS {0}", tableName);
-        exec(statement);
-        if (tableData != null) {
-            tableData.created = false;
-        }
     }
 
     @NonNull
@@ -290,6 +276,21 @@ public class DatabaseOperator extends SQLiteOpenHelper {
         } catch (Throwable ignore) {
         }
         return Collections.emptyList();
+    }
+
+    private void dropTable(@NonNull String tableName, @Nullable TableData tableData) {
+        if (tableData == null) {
+            tableData = TableData.searchByName(tableName);
+        }
+        if (tableData != null && tableData.created) {
+            return;
+        }
+        Statement statement = Statement
+                .rawStatement("DROP TABLE IF EXISTS {0}", tableName);
+        exec(statement);
+        if (tableData != null) {
+            tableData.created = false;
+        }
     }
 
     @Override

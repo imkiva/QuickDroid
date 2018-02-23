@@ -1,7 +1,5 @@
 package com.imkiva.quickdroid.database;
 
-import com.imkiva.quickdroid.QuickApp;
-
 /**
  * @author kiva
  */
@@ -12,10 +10,6 @@ public class DatabaseConfig {
 
     private OnDatabaseUpgradedListener onDatabaseUpgradedListener;
     private boolean clearTablesWhenUpdated = false;
-
-    public DatabaseConfig(String databaseName) {
-        this(databaseName, QuickApp.getAppVersionCode());
-    }
 
     public DatabaseConfig(String databaseName, int databaseVersion) {
         this.databaseName = databaseName;
