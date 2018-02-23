@@ -10,7 +10,7 @@ import java.util.Map;
  * <pre>
  *     HashMap<String, Object> values = new HashMap<>();
  *     values.put("greetingMessage", "hello world");
- *     IGreeting greet = Reflector.on(values).fake(IGreeting.class);
+ *     IGreeting greet = Reflector.of(values).fake(IGreeting.class);
  *     String message = greet.getGreetingMessage();
  * </pre>
  * As you see above, {@code message} is {@code equals} to {@code "hello world"}
@@ -33,7 +33,7 @@ public class FakeInvocationHandler implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String name = method.getName();
         try {
-            return Reflector.on(target).call(name, args).get();
+            return Reflector.of(target).call(name, args).get();
 
         } catch (ReflectionException e) {
             if (isMap) {

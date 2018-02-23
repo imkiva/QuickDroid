@@ -44,12 +44,12 @@ public class Reflector {
 
     /**
      * Wrap an object and return its reflector.
-     * Helpful especially when you want to access instance fields and methods on any {@link Object}
+     * Helpful especially when you want to access instance fields and methods of any {@link Object}
      *
      * @param object The object to be wrapped
      * @return Reflector
      */
-    public static Reflector on(Object object) {
+    public static Reflector of(Object object) {
         return new Reflector(object);
     }
 
@@ -60,7 +60,7 @@ public class Reflector {
      * @param clazz Given class type
      * @return Reflector
      */
-    public static Reflector on(Class<?> clazz) {
+    public static Reflector of(Class<?> clazz) {
         return new Reflector(clazz);
     }
 
@@ -70,10 +70,10 @@ public class Reflector {
      * @param className Full class name
      * @return Reflector
      * @throws ReflectionException If any error occurs
-     * @see #on(Class)
+     * @see #of(Class)
      */
-    public static Reflector on(String className) {
-        return on(className, Reflector.class.getClassLoader());
+    public static Reflector of(String className) {
+        return of(className, Reflector.class.getClassLoader());
     }
 
     /**
@@ -83,10 +83,10 @@ public class Reflector {
      * @param classLoader Given class loader
      * @return Reflector
      * @throws ReflectionException If any error occurs
-     * @see #on(Class)
+     * @see #of(Class)
      */
-    public static Reflector on(String className, ClassLoader classLoader) {
-        return on(ReflectionHelper.forName(className, classLoader));
+    public static Reflector of(String className, ClassLoader classLoader) {
+        return of(ReflectionHelper.forName(className, classLoader));
     }
 
     /**
@@ -114,7 +114,7 @@ public class Reflector {
             constructor = ReflectionHelper.makeAccessible(constructor);
 
             Object instance = constructor.newInstance(args);
-            return on(instance);
+            return of(instance);
 
         } catch (Exception e) {
             throw new ReflectionException(e);
@@ -152,11 +152,11 @@ public class Reflector {
 
             if (ReflectionHelper.wrapType(returnType) == Void.class) {
                 method.invoke(target, args);
-                return on(targetClass);
+                return of(targetClass);
 
             } else {
                 Object result = method.invoke(target, args);
-                return on(result);
+                return of(result);
             }
 
         } catch (Exception e) {
@@ -208,7 +208,7 @@ public class Reflector {
      */
     public Reflector field(String fieldName) throws ReflectionException {
         try {
-            return on(lookupField(fieldName).get(target));
+            return of(lookupField(fieldName).get(target));
 
         } catch (IllegalAccessException e) {
             throw new ReflectionException(e);
@@ -216,7 +216,7 @@ public class Reflector {
     }
 
     /**
-     * Create a dynamic proxy based on the given type.
+     * Create a dynamic proxy based of the given type.
      * If we are maintaining a Map and error occurs when calling methods,
      * we will return value from Map as return value.
      * Helpful especially when creating default data handlers.

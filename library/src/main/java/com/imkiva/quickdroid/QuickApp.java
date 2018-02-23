@@ -28,7 +28,7 @@ public final class QuickApp {
      * @return Current Application
      */
     public static Application getApplication() {
-        return Reflector.on("android.app.ActivityThread")
+        return Reflector.of("android.app.ActivityThread")
                 .call("currentActivityThread")
                 .call("getApplication")
                 .get();

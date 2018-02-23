@@ -13,58 +13,58 @@ import java.util.Map;
 public class ReflectorTest {
     @Test
     public void forName() {
-        Assert.assertEquals(SomeClass.class, Reflector.on(SomeClass.class.getName()).getTargetClass());
-        Assert.assertEquals(SomeClass.class, Reflector.on(new SomeClass()).getTargetClass());
-        Assert.assertEquals(SomeClass.class, Reflector.on(SomeClass.class).getTargetClass());
+        Assert.assertEquals(SomeClass.class, Reflector.of(SomeClass.class.getName()).getTargetClass());
+        Assert.assertEquals(SomeClass.class, Reflector.of(new SomeClass()).getTargetClass());
+        Assert.assertEquals(SomeClass.class, Reflector.of(SomeClass.class).getTargetClass());
     }
 
     @Test
     public void instance() {
-        SomeClass someClass = Reflector.on(SomeClass.class).instance().get();
+        SomeClass someClass = Reflector.of(SomeClass.class).instance().get();
         Assert.assertNotNull(someClass);
         Assert.assertEquals("default", someClass.getString());
 
-        SomeClass someClass1 = Reflector.on(SomeClass.class).instance("ABC").get();
+        SomeClass someClass1 = Reflector.of(SomeClass.class).instance("ABC").get();
         Assert.assertNotNull(someClass1);
         Assert.assertEquals("ABC", someClass1.getString());
     }
 
     @Test
     public void call() {
-        SomeClass someClass = Reflector.on(SomeClass.class).instance().get();
+        SomeClass someClass = Reflector.of(SomeClass.class).instance().get();
         Assert.assertNotNull(someClass);
-        String got = Reflector.on(someClass).call("getString").get();
+        String got = Reflector.of(someClass).call("getString").get();
         Assert.assertEquals("default", got);
 
-        SomeClass someClass1 = Reflector.on(SomeClass.class).instance().get();
+        SomeClass someClass1 = Reflector.of(SomeClass.class).instance().get();
         Assert.assertNotNull(someClass1);
-        Reflector.on(someClass1).call("setString", "ABCDEF");
+        Reflector.of(someClass1).call("setString", "ABCDEF");
         Assert.assertEquals("ABCDEF", someClass1.getString());
     }
 
     @Test(expected = ReflectionException.class)
     public void callDoesNotExist() {
-        SomeClass someClass = Reflector.on(SomeClass.class).instance().get();
-        Reflector.on(someClass).call("doesNotExist");
+        SomeClass someClass = Reflector.of(SomeClass.class).instance().get();
+        Reflector.of(someClass).call("doesNotExist");
     }
 
     @Test
     public void field() {
-        SomeClass someClass = Reflector.on(SomeClass.class).instance().get();
+        SomeClass someClass = Reflector.of(SomeClass.class).instance().get();
         Assert.assertNotNull(someClass);
-        String got = Reflector.on(someClass).get("string");
+        String got = Reflector.of(someClass).get("string");
         Assert.assertEquals("default", got);
 
-        SomeClass someClass1 = Reflector.on(SomeClass.class).instance().get();
+        SomeClass someClass1 = Reflector.of(SomeClass.class).instance().get();
         Assert.assertNotNull(someClass1);
-        Reflector.on(someClass1).set("string", "ABCDEF");
+        Reflector.of(someClass1).set("string", "ABCDEF");
         Assert.assertEquals("ABCDEF", someClass1.getString());
     }
 
     @Test
     public void fake() {
         SomeClass someClass = new SomeClass();
-        SomeInterface someInterface = Reflector.on(someClass).fake(SomeInterface.class);
+        SomeInterface someInterface = Reflector.of(someClass).fake(SomeInterface.class);
         someInterface.setName("hello");
         Assert.assertEquals("hello", someInterface.getName());
     }
@@ -72,7 +72,7 @@ public class ReflectorTest {
     @Test(expected = FakePenetratedException.class)
     public void fakeDoesNotExist() {
         SomeClass someClass = new SomeClass();
-        SomeInterface someInterface = Reflector.on(someClass).fake(SomeInterface.class);
+        SomeInterface someInterface = Reflector.of(someClass).fake(SomeInterface.class);
         someInterface.setAge(10);
     }
 
@@ -82,7 +82,7 @@ public class ReflectorTest {
         SomeClass someClass = new SomeClass();
         values.put("name", "Tom");
         values.put("age", 10);
-        SomeInterface someInterface = Reflector.on(values).fake(SomeInterface.class);
+        SomeInterface someInterface = Reflector.of(values).fake(SomeInterface.class);
         Assert.assertEquals("Tom", someInterface.getName());
         Assert.assertEquals(10, someInterface.getAge());
 

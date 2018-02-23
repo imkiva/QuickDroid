@@ -11,7 +11,10 @@ import com.imkiva.quickdroid.database.statement.Statement;
 import com.imkiva.quickdroid.database.statement.StatementBuilder;
 import com.imkiva.quickdroid.database.type.FieldDataMapper;
 import com.imkiva.quickdroid.database.type.FieldType;
+import com.imkiva.quickdroid.functional.QSupplier;
+import com.imkiva.quickdroid.reflection.Reflector;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -68,42 +71,85 @@ public class DatabaseOperator extends SQLiteOpenHelper {
 
     @NonNull
     public <T> List<T> selectAll(Class<T> type) {
-        return null;
+        return selectWhere(type, null);
     }
 
     @Nullable
-    public <T> T selectByPrimaryKey(@NonNull Class<T> type, @NonNull Object primaryKey) {
-        TableData tableData = TableData.get(type);
-        validatePrimaryKey(tableData, primaryKey);
-        String primaryKeyName = DEFAULT_PRIMARY_KEY;
-        if (tableData.hasDeclaredPrimaryKey) {
-            primaryKeyName = tableData.primaryKeyField.getName();
-        }
-        return selectWhere(type, "{0} = {1}",
-                primaryKeyName,
-                FieldDataMapper.mapToString(primaryKey));
+    public <T> T selectPrimary(@NonNull Class<T> type, @NonNull Object primaryKey) {
+        return selectPrimaryOrGet(type, primaryKey, () -> null);
     }
 
     @Nullable
-    public <T> T selectWhere(Class<T> type, String where, Object... args) {
-        return null;
+    public <T> T selectPrimaryOr(@NonNull Class<T> type, @NonNull Object primaryKey,
+                                 @Nullable T defaultValue) {
+        return selectPrimaryOrGet(type, primaryKey, () -> defaultValue);
     }
 
-    public void deleteByPrimaryKey(@NonNull Class<?> type, @NonNull Object primaryKey) {
+    @Nullable
+    public <T> T selectPrimaryOrGet(@NonNull Class<T> type, @NonNull Object primaryKey,
+                                    @NonNull QSupplier<T> defaultValue) {
         TableData tableData = TableData.get(type);
         validatePrimaryKey(tableData, primaryKey);
-        String primaryKeyName = DEFAULT_PRIMARY_KEY;
-        if (tableData.hasDeclaredPrimaryKey) {
-            primaryKeyName = tableData.primaryKeyField.getName();
-        }
-        deleteWhere(type, "{0} = {1}",
+        String primaryKeyName = tableData.hasDeclaredPrimaryKey
+                ? tableData.primaryKeyField.getName()
+                : DEFAULT_PRIMARY_KEY;
+        List<T> got = selectWhere(type, "{0} = {1}",
                 primaryKeyName,
                 FieldDataMapper.mapToString(primaryKey));
+        return got.isEmpty() ? defaultValue.get() : got.get(0);
+    }
+
+    @NonNull
+    public <T> List<T> selectWhere(@NonNull Class<T> type, @Nullable String where, @Nullable Object... args) {
+        TableData tableData = TableData.get(type);
+        StatementBuilder builder = Statement.begin(tableData).select();
+        if (where != null) {
+            builder.where(where, args);
+        }
+        Statement statement = builder.end();
+
+        try (Cursor cursor = query(statement)) {
+            if (cursor != null) {
+                List<T> found = new ArrayList<>();
+                while (cursor.moveToNext()) {
+                    T one = Reflector.of(type).instance().get();
+
+                    if (tableData.hasDeclaredPrimaryKey) {
+                        Field field = tableData.primaryKeyField;
+                        FieldType primaryKeyType = tableData.primaryKeyType;
+                        setValue(cursor, one, field, primaryKeyType, cursor.getColumnIndex(field.getName()));
+                    }
+                    for (Field field : tableData.databaseItems.keySet()) {
+                        FieldType fieldType = tableData.databaseItems.get(field);
+                        setValue(cursor, one, field, fieldType, cursor.getColumnIndex(field.getName()));
+                    }
+                    found.add(one);
+                }
+                return found;
+            }
+        } catch (Throwable ignore) {
+        }
+
+        return Collections.emptyList();
+    }
+
+    public void deletePrimary(@NonNull Class<?> type, @NonNull Object primaryKey) {
+        TableData tableData = TableData.get(type);
+        validatePrimaryKey(tableData, primaryKey);
+        String primaryKeyName = tableData.hasDeclaredPrimaryKey
+                ? tableData.primaryKeyField.getName()
+                : DEFAULT_PRIMARY_KEY;
+        Statement statement = Statement.begin(tableData)
+                .delete()
+                .where("{0} = {1}", primaryKeyName,
+                        FieldDataMapper.mapToString(primaryKey))
+                .end();
+        exec(statement);
     }
 
     public void deleteWhere(@NonNull Class<?> type, @Nullable String where, @Nullable Object... args) {
         TableData tableData = TableData.get(type);
-        StatementBuilder builder = Statement.begin(tableData);
+        StatementBuilder builder = Statement.begin(tableData).delete();
         if (where != null) {
             builder.where(where, args);
         }
@@ -159,6 +205,34 @@ public class DatabaseOperator extends SQLiteOpenHelper {
         }
     }
 
+    private void setValue(Cursor cursor, Object receiver, Field field, FieldType fieldType, int index) {
+        try {
+            switch (fieldType) {
+                case INTEGER:
+                    int intValue = cursor.getInt(index);
+                    try {
+                        field.setInt(receiver, intValue);
+                    } catch (IllegalArgumentException e) {
+                        field.setBoolean(receiver, intValue == 1);
+                    }
+                    break;
+                case BIGINT:
+                    field.setLong(receiver, cursor.getLong(index));
+                    break;
+                case FLOAT:
+                    field.setFloat(receiver, cursor.getFloat(index));
+                    break;
+                case DOUBLE:
+                    field.setDouble(receiver, cursor.getDouble(index));
+                    break;
+                case TEXT:
+                    field.set(receiver, cursor.getString(index));
+                    break;
+            }
+        } catch (IllegalAccessException ignore) {
+        }
+    }
+
     private void createTableIfNeed(TableData tableData) {
         if (isTableCreated(tableData)) {
             return;
@@ -206,12 +280,13 @@ public class DatabaseOperator extends SQLiteOpenHelper {
                 .where("type = {0}", "table")
                 .end();
         try (Cursor cursor = query(statement)) {
-            cursor.moveToFirst();
-            List<String> tableNames = new ArrayList<>();
-            while (cursor.moveToNext()) {
-                tableNames.add(cursor.getString(0));
+            if (cursor != null) {
+                List<String> tableNames = new ArrayList<>();
+                while (cursor.moveToNext()) {
+                    tableNames.add(cursor.getString(0));
+                }
+                return tableNames;
             }
-            return tableNames;
         } catch (Throwable ignore) {
         }
         return Collections.emptyList();
