@@ -13,7 +13,7 @@ public class DatabaseConfig {
 
     public DatabaseConfig(String databaseName, int databaseVersion) {
         this.databaseName = databaseName;
-        this.databaseVersion = databaseVersion;
+        this.databaseVersion = databaseVersion >= 1 ? databaseVersion : 1;
     }
 
     public void setDatabaseName(String databaseName) {

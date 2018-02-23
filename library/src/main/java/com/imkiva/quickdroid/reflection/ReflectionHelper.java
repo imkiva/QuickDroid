@@ -76,14 +76,18 @@ public final class ReflectionHelper {
             if (type == short.class) {
                 return Short.class;
             }
+            if (type == boolean.class) {
+                return Boolean.class;
+            }
         }
         return type;
     }
 
     /**
      * Find a method that matches or mostly matches method name and parameter types.
-     * @param clazz Class type
-     * @param methodName Method name
+     *
+     * @param clazz          Class type
+     * @param methodName     Method name
      * @param parameterTypes Method parameter types
      * @return Method
      * @throws NoSuchMethodException When method or similar method not found
@@ -148,7 +152,8 @@ public final class ReflectionHelper {
 
     /**
      * Find a constructor that matches parameter types
-     * @param clazz Class type
+     *
+     * @param clazz          Class type
      * @param parameterTypes Parameter types
      * @return Constructor
      * @throws NoSuchMethodException When constructor not found
@@ -175,7 +180,8 @@ public final class ReflectionHelper {
 
     /**
      * Find a field that matches the name
-     * @param clazz Class type
+     *
+     * @param clazz     Class type
      * @param fieldName Field name
      * @return Field
      * @throws NoSuchFieldException When field not found
@@ -223,7 +229,7 @@ public final class ReflectionHelper {
      * Make an {@link AccessibleObject} accessible.
      *
      * @param object The object to be made accessible
-     * @param <T> Type of the object
+     * @param <T>    Type of the object
      * @return Accessible object
      */
     @SuppressWarnings("unchecked")

@@ -4,6 +4,9 @@ import com.imkiva.quickdroid.database.DatabaseConfig;
 import com.imkiva.quickdroid.database.DatabaseOperator;
 import com.imkiva.quickdroid.database.OnDatabaseUpgradedListener;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * The database helper.
  *
@@ -11,6 +14,8 @@ import com.imkiva.quickdroid.database.OnDatabaseUpgradedListener;
  * @see DatabaseOperator
  */
 public final class QuickDatabase {
+    private static final Map<String, DatabaseOperator> CACHES = new HashMap<>(4);
+
     /**
      * Open a database with default name {@code DatabaseOperator.DEFAULT_DATABASE_NAME}.
      *
@@ -71,7 +76,15 @@ public final class QuickDatabase {
      * @return Database operator
      */
     public static DatabaseOperator open(DatabaseConfig config) {
-        return new DatabaseOperator(QuickApp.getApplication().getApplicationContext(),
+        DatabaseOperator operator = CACHES.get(config.getDatabaseName());
+        if (operator != null) {
+            return operator;
+        }
+        operator = new DatabaseOperator(QuickApp.getApplication().getApplicationContext(),
                 config);
+        synchronized (CACHES) {
+            CACHES.put(config.getDatabaseName(), operator);
+        }
+        return operator;
     }
 }

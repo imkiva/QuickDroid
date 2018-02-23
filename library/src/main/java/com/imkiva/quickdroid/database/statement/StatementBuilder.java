@@ -8,6 +8,7 @@ import com.imkiva.quickdroid.database.DatabaseOperator;
 import com.imkiva.quickdroid.database.TableData;
 import com.imkiva.quickdroid.database.type.FieldDataMapper;
 import com.imkiva.quickdroid.database.type.FieldType;
+import com.imkiva.quickdroid.util.Log;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -181,6 +182,7 @@ public class StatementBuilder {
 
     /****** finisher *******/
     public Statement end() {
+        Log.d(() -> "SQL: " + statement.toString());
         return new Statement(statement.toString());
     }
 

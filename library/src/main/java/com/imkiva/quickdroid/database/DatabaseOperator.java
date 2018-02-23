@@ -147,9 +147,8 @@ public class DatabaseOperator extends SQLiteOpenHelper {
         String primaryKeyName = tableData.hasDeclaredPrimaryKey
                 ? tableData.primaryKeyField.getName()
                 : DEFAULT_PRIMARY_KEY;
-        List<T> got = selectWhere(type, "{0} = {1}",
-                primaryKeyName,
-                FieldDataMapper.mapToString(primaryKey));
+        List<T> got = selectWhere(type, primaryKeyName + " = {0}",
+                primaryKey);
         return got.isEmpty() ? defaultValue.get() : got.get(0);
     }
 
