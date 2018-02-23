@@ -20,13 +20,30 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * The database operator.
+ * This class will do all the operations related to SQLiteDatabase.
+ *
  * @author kiva
  */
 public class DatabaseOperator extends SQLiteOpenHelper {
+    /**
+     * If no database name specified, use this instead.
+     */
     public static final String DEFAULT_DATABASE_NAME = "quick_database";
+
+    /**
+     * If no primary key specified, use this instead.
+     */
     public static final String DEFAULT_PRIMARY_KEY = "quick_id";
 
+    /**
+     * Whether we should drop all tables stored in database when it get updated.
+     */
     private boolean clearTablesWhenUpdated;
+
+    /**
+     * Called when database get updated.
+     */
     private OnDatabaseUpgradedListener onDatabaseUpgradedListener;
 
     public DatabaseOperator(@NonNull Context context, @NonNull DatabaseConfig databaseConfig) {
@@ -35,42 +52,93 @@ public class DatabaseOperator extends SQLiteOpenHelper {
         setConfig(databaseConfig);
     }
 
+    /**
+     * Apply new config without changing database name.
+     *
+     * @param config New config
+     */
     public void setConfig(@NonNull DatabaseConfig config) {
         this.clearTablesWhenUpdated = config.isClearTablesWhenUpdated();
         this.onDatabaseUpgradedListener = config.getOnDatabaseUpgradedListener();
     }
 
+    /**
+     * Drop all tables!
+     */
     public void dropAllTables() {
         for (String tableName : getAllTables()) {
             dropTable(tableName);
         }
     }
 
+    /**
+     * Drop table that stores given models.
+     *
+     * @param type Model
+     */
     public void dropTable(@NonNull Class<?> type) {
         TableData tableData = TableData.get(type);
         dropTable(tableData.tableName, tableData);
     }
 
+    /**
+     * Drop table by given name.
+     *
+     * @param tableName Table name
+     */
     public void dropTable(@NonNull String tableName) {
         dropTable(tableName, null);
     }
 
+    /**
+     * Get all models
+     *
+     * @param type Model
+     * @param <T>  Model type
+     * @return Models
+     */
     @NonNull
-    public <T> List<T> selectAll(Class<T> type) {
+    public <T> List<T> selectAll(@NonNull Class<T> type) {
         return selectWhere(type, null);
     }
 
+    /**
+     * Get model by primary key.
+     *
+     * @param type       Model
+     * @param primaryKey Primary value
+     * @param <T>        Model type
+     * @return Model if found, otherwise {@code null}
+     */
     @Nullable
     public <T> T selectPrimary(@NonNull Class<T> type, @NonNull Object primaryKey) {
         return selectPrimaryOrGet(type, primaryKey, () -> null);
     }
 
+    /**
+     * Get model by primary key.
+     *
+     * @param type         Model
+     * @param primaryKey   Primary value
+     * @param defaultValue The value returned when not found
+     * @param <T>          Model type
+     * @return Model if found, otherwise defaultValue
+     */
     @Nullable
     public <T> T selectPrimaryOr(@NonNull Class<T> type, @NonNull Object primaryKey,
                                  @Nullable T defaultValue) {
         return selectPrimaryOrGet(type, primaryKey, () -> defaultValue);
     }
 
+    /**
+     * Get model by primary key.
+     *
+     * @param type         Model
+     * @param primaryKey   Primary value
+     * @param defaultValue The value returned when not found
+     * @param <T>          Model type
+     * @return Model if found, otherwise {@code defaultValue.get()}
+     */
     @Nullable
     public <T> T selectPrimaryOrGet(@NonNull Class<T> type, @NonNull Object primaryKey,
                                     @NonNull QSupplier<T> defaultValue) {
@@ -85,6 +153,13 @@ public class DatabaseOperator extends SQLiteOpenHelper {
         return got.isEmpty() ? defaultValue.get() : got.get(0);
     }
 
+    /**
+     * Get models that match the conditions.
+     *
+     * @param type Model
+     * @param <T>  Model type
+     * @return List containing matched models
+     */
     @NonNull
     public <T> List<T> selectWhere(@NonNull Class<T> type, @Nullable String where, @Nullable Object... args) {
         TableData tableData = TableData.get(type);
@@ -119,6 +194,12 @@ public class DatabaseOperator extends SQLiteOpenHelper {
         return Collections.emptyList();
     }
 
+    /**
+     * Delete a model by primary key.
+     *
+     * @param type       Model
+     * @param primaryKey Primary value
+     */
     public void deletePrimary(@NonNull Class<?> type, @NonNull Object primaryKey) {
         TableData tableData = TableData.get(type);
         validatePrimaryKey(tableData, primaryKey);
@@ -133,6 +214,13 @@ public class DatabaseOperator extends SQLiteOpenHelper {
         exec(statement);
     }
 
+    /**
+     * Delete models that match the conditions.
+     *
+     * @param type  Model
+     * @param where Conditions
+     * @param args  Selection arguments
+     */
     public void deleteWhere(@NonNull Class<?> type, @Nullable String where, @Nullable Object... args) {
         TableData tableData = TableData.get(type);
         StatementBuilder builder = Statement.begin(tableData).delete();
@@ -143,6 +231,11 @@ public class DatabaseOperator extends SQLiteOpenHelper {
         exec(statement);
     }
 
+    /**
+     * Insert a model.
+     *
+     * @param object Model object
+     */
     public void insert(@NonNull Object object) {
         TableData tableData = TableData.get(object.getClass());
         createTableIfNeed(tableData);
@@ -152,6 +245,11 @@ public class DatabaseOperator extends SQLiteOpenHelper {
         exec(statement);
     }
 
+    /**
+     * Update a model.
+     *
+     * @param object Model object
+     */
     public void update(@NonNull Object object) {
         TableData tableData = TableData.get(object.getClass());
         createTableIfNeed(tableData);

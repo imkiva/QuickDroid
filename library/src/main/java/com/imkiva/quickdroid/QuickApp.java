@@ -9,7 +9,12 @@ import com.imkiva.quickdroid.functional.QSupplier;
 import com.imkiva.quickdroid.reflection.Reflector;
 
 /**
+ * The application helper.
+ *
  * @author kiva
+ * @see Toast
+ * @see android.app.Activity
+ * @see Application
  */
 
 public final class QuickApp {
