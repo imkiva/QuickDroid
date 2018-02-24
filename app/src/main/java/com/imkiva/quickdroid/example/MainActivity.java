@@ -1,4 +1,4 @@
-package com.imkiva.quickdroid;
+package com.imkiva.quickdroid.example;
 
 import android.os.Bundle;
 import android.widget.Button;

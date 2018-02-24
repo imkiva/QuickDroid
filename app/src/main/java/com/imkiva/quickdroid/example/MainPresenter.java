@@ -1,4 +1,4 @@
-package com.imkiva.quickdroid;
+package com.imkiva.quickdroid.example;
 
 import com.imkiva.quickdroid.ui.presenter.Presenter;
 

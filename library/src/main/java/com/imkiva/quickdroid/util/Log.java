@@ -3,7 +3,6 @@ package com.imkiva.quickdroid.util;
 import com.imkiva.quickdroid.QuickApp;
 import com.imkiva.quickdroid.functional.QSupplier;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.List;
@@ -15,12 +14,6 @@ import java.util.List;
  * @author kiva
  */
 public final class Log {
-    private static boolean LOG_ENABLED = QuickApp.isDebug();
-
-    public static void setLogEnabled(boolean enabled) {
-        Log.LOG_ENABLED = enabled;
-    }
-
     private static String getCallerHeader(String logType) {
         StackTraceElement targetElement = new Throwable().getStackTrace()[3];
         String className = targetElement.getClassName();
@@ -59,26 +52,21 @@ public final class Log {
                 .toString();
     }
 
-    private static void log(PrintStream printStream, String logType, QSupplier<String> message) {
-        if (LOG_ENABLED) {
-            printStream.print(getCallerHeader(logType));
-            printStream.println(message.get());
-        }
+    public static void e(String message) {
+        android.util.Log.e(getCallerHeader("E"), message);
     }
 
-    public static void e(QSupplier<String> message) {
-        log(System.err, "Error", message);
+    public static void w(String message) {
+        android.util.Log.e(getCallerHeader("W"), message);
+    }
+
+    public static void i(String message) {
+        android.util.Log.e(getCallerHeader("I"), message);
     }
 
     public static void d(QSupplier<String> message) {
-        log(System.out, "Debug", message);
-    }
-
-    public static void i(QSupplier<String> message) {
-        log(System.out, "Info", message);
-    }
-
-    public static void w(QSupplier<String> message) {
-        log(System.err, "Warn", message);
+        if (QuickApp.isDebug()) {
+            android.util.Log.e(getCallerHeader("E"), message.get());
+        }
     }
 }
