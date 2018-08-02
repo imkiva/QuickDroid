@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.imkiva.quickdroid.functional.QConsumer;
 import com.imkiva.quickdroid.ui.view.IPresentedView;
 
 /**
@@ -27,6 +28,13 @@ public class Presenter<V extends IPresentedView> {
     }
 
     protected void onSaveState(Bundle bundle) {
+    }
+
+    protected void postIfAvailable(QConsumer<V> consumer) {
+        V view = getView();
+        if (view != null) {
+            consumer.accept(view);
+        }
     }
 
     @Nullable

@@ -18,8 +18,13 @@ public class MainActivity extends PresentedActivity<MainPresenter> {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.main_presenter);
 
         getPresenter().requestDelay(1000);
+        getPresenter().loadWelcome();
+    }
+
+    public void onConfigureLoaded() {
     }
 
     public void onDelayFinish() {
