@@ -8,7 +8,6 @@ def libraryRepoName = "quick-droid"
 def libraryDesc = "Let's make Android development elegant and easy!"
 def libraryVersionCode = rootProject.ext.android.libraryVersionCode
 def libraryVersionName = rootProject.ext.android.libraryVersionName
-def libraryJavaDocLink = "http://docs.oracle.com/javase/8/docs/api"
 def libraryLicences = ["MIT"]
 
 group = libraryGroup
@@ -49,25 +48,7 @@ task sourcesJar(type: Jar) {
     classifier = 'sources'
 }
 
-task javadoc(type: Javadoc) {
-    options {
-        encoding "UTF-8"
-        charSet 'UTF-8'
-        author true
-        version true
-        links libraryJavaDocLink
-    }
-    source = android.sourceSets.main.java.srcDirs
-    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
-
 artifacts {
-    archives javadocJar
     archives sourcesJar
 }
 
