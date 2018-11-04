@@ -1,0 +1,90 @@
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.jfrog.bintray'
+
+def siteUrl = 'https://github.com/imkiva/QuickDroid.git'
+def gitUrl = 'https://github.com/imkiva/QuickDroid.git'
+def libraryGroup = "com.imkiva.quickdroid"
+def libraryRepoName = "quick-droid"
+def libraryDesc = "Let's make Android development elegant and easy!"
+def libraryVersionCode = rootProject.ext.android.libraryVersionCode
+def libraryVersionName = rootProject.ext.android.libraryVersionName
+def libraryJavaDocLink = "http://docs.oracle.com/javase/8/docs/api"
+def libraryLicences = ["MIT"]
+
+group = libraryGroup
+version = libraryVersionName + "-" + libraryVersionCode
+
+install {
+    repositories.mavenInstaller {
+        pom {
+            project {
+                packaging 'aar'
+                name libraryDesc
+                url siteUrl
+                licenses {
+                    license {
+                        name 'The MIT Software License'
+                        url 'https://mit-license.org/'
+                    }
+                }
+                developers {
+                    developer {
+                        id 'imkiva'
+                        name 'imKiva'
+                        email 'libkernelpanic@gmail.com'
+                    }
+                }
+                scm {
+                    connection gitUrl
+                    developerConnection gitUrl
+                    url siteUrl
+                }
+            }
+        }
+    }
+}
+
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+task javadoc(type: Javadoc) {
+    options {
+        encoding "UTF-8"
+        charSet 'UTF-8'
+        author true
+        version true
+        links libraryJavaDocLink
+    }
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+Properties properties = new Properties()
+properties.load(project.file('../local.properties').newDataInputStream())
+bintray {
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.apikey")
+    configurations = ['archives']
+    pkg {
+        repo = "maven"
+        name = libraryRepoName
+        websiteUrl = siteUrl
+        vcsUrl = gitUrl
+        dryRun = false
+        licenses = libraryLicences
+        publish = true
+        publicDownloadNumbers = true
+    }
+}
