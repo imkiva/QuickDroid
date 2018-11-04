@@ -3,9 +3,9 @@ package com.imkiva.quickdroid.database.statement;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.imkiva.quickdroid.database.DatabaseMalformedException;
 import com.imkiva.quickdroid.database.DatabaseOperator;
-import com.imkiva.quickdroid.database.TableData;
+import com.imkiva.quickdroid.database.SQLMalformedException;
+import com.imkiva.quickdroid.database.TableMetaInfo;
 import com.imkiva.quickdroid.database.type.FieldDataMapper;
 import com.imkiva.quickdroid.database.type.FieldType;
 import com.imkiva.quickdroid.util.Log;
@@ -20,9 +20,9 @@ import java.util.Arrays;
 public class StatementBuilder {
     private final StringBuilder statement = new StringBuilder();
     private StatementType statementType = StatementType.INITIAL;
-    private TableData table;
+    private TableMetaInfo table;
 
-    StatementBuilder(TableData table) {
+    StatementBuilder(TableMetaInfo table) {
         this.table = table;
     }
 
@@ -197,7 +197,7 @@ public class StatementBuilder {
             }
         }
 
-        throw new DatabaseMalformedException(newType.name()
+        throw new SQLMalformedException(newType.name()
                 + " cannot be used in "
                 + statementType.name()
                 + ", expected "

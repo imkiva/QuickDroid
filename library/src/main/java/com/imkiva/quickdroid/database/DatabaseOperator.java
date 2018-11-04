@@ -12,7 +12,7 @@ import com.imkiva.quickdroid.database.statement.StatementBuilder;
 import com.imkiva.quickdroid.database.type.FieldDataMapper;
 import com.imkiva.quickdroid.database.type.FieldType;
 import com.imkiva.quickdroid.functional.QSupplier;
-import com.imkiva.quickdroid.reflection.Reflector;
+import com.imkiva.quickdroid.reflection.core.Reflector;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -44,7 +44,7 @@ public class DatabaseOperator extends SQLiteOpenHelper {
     /**
      * Called when database get updated.
      */
-    private OnDatabaseUpgradedListener onDatabaseUpgradedListener;
+    private OnDatabaseUpgradeListener onDatabaseUpgradeListener;
 
     public DatabaseOperator(@NonNull Context context, @NonNull DatabaseConfig databaseConfig) {
         super(context, databaseConfig.getDatabaseName(),
@@ -59,7 +59,7 @@ public class DatabaseOperator extends SQLiteOpenHelper {
      */
     public void setConfig(@NonNull DatabaseConfig config) {
         this.clearTablesWhenUpdated = config.isClearTablesWhenUpdated();
-        this.onDatabaseUpgradedListener = config.getOnDatabaseUpgradedListener();
+        this.onDatabaseUpgradeListener = config.getOnDatabaseUpgradeListener();
     }
 
     /**
@@ -77,8 +77,8 @@ public class DatabaseOperator extends SQLiteOpenHelper {
      * @param type Model
      */
     public void dropTable(@NonNull Class<?> type) {
-        TableData tableData = TableData.get(type);
-        dropTable(tableData.tableName, tableData);
+        TableMetaInfo tableMetaInfo = TableMetaInfo.get(type);
+        dropTable(tableMetaInfo.tableName, tableMetaInfo);
     }
 
     /**
@@ -142,10 +142,10 @@ public class DatabaseOperator extends SQLiteOpenHelper {
     @Nullable
     public <T> T selectPrimaryOrGet(@NonNull Class<T> type, @NonNull Object primaryKey,
                                     @NonNull QSupplier<T> defaultValue) {
-        TableData tableData = TableData.get(type);
-        validatePrimaryKey(tableData, primaryKey);
-        String primaryKeyName = tableData.hasDeclaredPrimaryKey
-                ? tableData.primaryKeyField.getName()
+        TableMetaInfo tableMetaInfo = TableMetaInfo.get(type);
+        validatePrimaryKey(tableMetaInfo, primaryKey);
+        String primaryKeyName = tableMetaInfo.hasDeclaredPrimaryKey
+                ? tableMetaInfo.primaryKeyField.getName()
                 : DEFAULT_PRIMARY_KEY;
         List<T> got = selectWhere(type, primaryKeyName + " = {0}",
                 primaryKey);
@@ -161,8 +161,8 @@ public class DatabaseOperator extends SQLiteOpenHelper {
      */
     @NonNull
     public <T> List<T> selectWhere(@NonNull Class<T> type, @Nullable String where, @Nullable Object... args) {
-        TableData tableData = TableData.get(type);
-        StatementBuilder builder = Statement.begin(tableData).select();
+        TableMetaInfo tableMetaInfo = TableMetaInfo.get(type);
+        StatementBuilder builder = Statement.begin(tableMetaInfo).select();
         if (where != null) {
             builder.where(where, args);
         }
@@ -174,13 +174,13 @@ public class DatabaseOperator extends SQLiteOpenHelper {
                 while (cursor.moveToNext()) {
                     T one = Reflector.of(type).instance().get();
 
-                    if (tableData.hasDeclaredPrimaryKey) {
-                        Field field = tableData.primaryKeyField;
-                        FieldType primaryKeyType = tableData.primaryKeyType;
+                    if (tableMetaInfo.hasDeclaredPrimaryKey) {
+                        Field field = tableMetaInfo.primaryKeyField;
+                        FieldType primaryKeyType = tableMetaInfo.primaryKeyType;
                         setValue(cursor, one, field, primaryKeyType, cursor.getColumnIndex(field.getName()));
                     }
-                    for (Field field : tableData.databaseItems.keySet()) {
-                        FieldType fieldType = tableData.databaseItems.get(field);
+                    for (Field field : tableMetaInfo.databaseItems.keySet()) {
+                        FieldType fieldType = tableMetaInfo.databaseItems.get(field);
                         setValue(cursor, one, field, fieldType, cursor.getColumnIndex(field.getName()));
                     }
                     found.add(one);
@@ -200,12 +200,12 @@ public class DatabaseOperator extends SQLiteOpenHelper {
      * @param primaryKey Primary value
      */
     public void deletePrimary(@NonNull Class<?> type, @NonNull Object primaryKey) {
-        TableData tableData = TableData.get(type);
-        validatePrimaryKey(tableData, primaryKey);
-        String primaryKeyName = tableData.hasDeclaredPrimaryKey
-                ? tableData.primaryKeyField.getName()
+        TableMetaInfo tableMetaInfo = TableMetaInfo.get(type);
+        validatePrimaryKey(tableMetaInfo, primaryKey);
+        String primaryKeyName = tableMetaInfo.hasDeclaredPrimaryKey
+                ? tableMetaInfo.primaryKeyField.getName()
                 : DEFAULT_PRIMARY_KEY;
-        Statement statement = Statement.begin(tableData)
+        Statement statement = Statement.begin(tableMetaInfo)
                 .delete()
                 .where("{0} = {1}", primaryKeyName,
                         FieldDataMapper.mapToString(primaryKey))
@@ -221,8 +221,8 @@ public class DatabaseOperator extends SQLiteOpenHelper {
      * @param args  Selection arguments
      */
     public void deleteWhere(@NonNull Class<?> type, @Nullable String where, @Nullable Object... args) {
-        TableData tableData = TableData.get(type);
-        StatementBuilder builder = Statement.begin(tableData).delete();
+        TableMetaInfo tableMetaInfo = TableMetaInfo.get(type);
+        StatementBuilder builder = Statement.begin(tableMetaInfo).delete();
         if (where != null) {
             builder.where(where, args);
         }
@@ -236,9 +236,9 @@ public class DatabaseOperator extends SQLiteOpenHelper {
      * @param object Model object
      */
     public void insert(@NonNull Object object) {
-        TableData tableData = TableData.get(object.getClass());
-        createTableIfNeed(tableData);
-        Statement statement = Statement.begin(tableData)
+        TableMetaInfo tableMetaInfo = TableMetaInfo.get(object.getClass());
+        createTableIfNeed(tableMetaInfo);
+        Statement statement = Statement.begin(tableMetaInfo)
                 .insert(object)
                 .end();
         exec(statement);
@@ -250,9 +250,9 @@ public class DatabaseOperator extends SQLiteOpenHelper {
      * @param object Model object
      */
     public void update(@NonNull Object object) {
-        TableData tableData = TableData.get(object.getClass());
-        createTableIfNeed(tableData);
-        Statement statement = Statement.begin(tableData)
+        TableMetaInfo tableMetaInfo = TableMetaInfo.get(object.getClass());
+        createTableIfNeed(tableMetaInfo);
+        Statement statement = Statement.begin(tableMetaInfo)
                 .update(object)
                 .end();
         exec(statement);
@@ -266,12 +266,12 @@ public class DatabaseOperator extends SQLiteOpenHelper {
         getWritableDatabase().execSQL(statement.getCode());
     }
 
-    private void validatePrimaryKey(@NonNull TableData tableData, @NonNull Object primaryKey) {
-        if (!tableData.hasDeclaredPrimaryKey) {
+    private void validatePrimaryKey(@NonNull TableMetaInfo tableMetaInfo, @NonNull Object primaryKey) {
+        if (!tableMetaInfo.hasDeclaredPrimaryKey) {
             FieldType primaryKeyType = FieldType.convert(primaryKey.getClass());
             if (primaryKeyType != FieldType.INTEGER) {
-                throw new DatabaseMalformedException("The primary key type of able "
-                        + tableData.tableName
+                throw new SQLMalformedException("The primary key type of able "
+                        + tableMetaInfo.tableName
                         + " is integer, but got "
                         + primaryKey.getClass().getName());
             }
@@ -279,10 +279,10 @@ public class DatabaseOperator extends SQLiteOpenHelper {
         }
 
         Class<?> actualType = primaryKey.getClass();
-        Class<?> expectedType = tableData.primaryKeyField.getType();
+        Class<?> expectedType = tableMetaInfo.primaryKeyField.getType();
         if (!actualType.equals(expectedType)) {
-            throw new DatabaseMalformedException("The primary key type of table "
-                    + tableData.tableName
+            throw new SQLMalformedException("The primary key type of table "
+                    + tableMetaInfo.tableName
                     + " is " + expectedType.getName()
                     + ", but got " + actualType.getName());
         }
@@ -316,49 +316,49 @@ public class DatabaseOperator extends SQLiteOpenHelper {
         }
     }
 
-    private void createTableIfNeed(TableData tableData) {
-        if (isTableCreated(tableData)) {
+    private void createTableIfNeed(TableMetaInfo tableMetaInfo) {
+        if (isTableCreated(tableMetaInfo)) {
             return;
         }
-        createTable(tableData);
+        createTable(tableMetaInfo);
     }
 
-    private boolean isTableCreated(TableData tableData) {
-        if (tableData.created) {
+    private boolean isTableCreated(TableMetaInfo tableMetaInfo) {
+        if (tableMetaInfo.created) {
             return true;
         }
 
-        Statement statement = Statement.begin(TableData.getMasterTableData())
+        Statement statement = Statement.begin(TableMetaInfo.getMasterTableData())
                 .count()
                 .where("type = {0}", "table")
-                .and("name = {0}", tableData.tableName)
+                .and("name = {0}", tableMetaInfo.tableName)
                 .end();
         try (Cursor cursor = query(statement)) {
             if (cursor != null && cursor.moveToNext()) {
                 int count = cursor.getInt(0);
                 if (count > 0) {
-                    tableData.created = true;
+                    tableMetaInfo.created = true;
                 }
             }
         } catch (Throwable ignore) {
         }
 
-        return tableData.created;
+        return tableMetaInfo.created;
     }
 
-    private void createTable(TableData tableData) {
-        if (tableData.created) {
+    private void createTable(TableMetaInfo tableMetaInfo) {
+        if (tableMetaInfo.created) {
             return;
         }
-        Statement statement = Statement.begin(tableData)
+        Statement statement = Statement.begin(tableMetaInfo)
                 .createTable()
                 .end();
         exec(statement);
-        tableData.created = true;
+        tableMetaInfo.created = true;
     }
 
     private List<String> getAllTables() {
-        Statement statement = Statement.begin(TableData.getMasterTableData())
+        Statement statement = Statement.begin(TableMetaInfo.getMasterTableData())
                 .select()
                 .where("type = {0}", "table")
                 .end();
@@ -375,18 +375,18 @@ public class DatabaseOperator extends SQLiteOpenHelper {
         return Collections.emptyList();
     }
 
-    private void dropTable(@NonNull String tableName, @Nullable TableData tableData) {
-        if (tableData == null) {
-            tableData = TableData.searchByName(tableName);
+    private void dropTable(@NonNull String tableName, @Nullable TableMetaInfo tableMetaInfo) {
+        if (tableMetaInfo == null) {
+            tableMetaInfo = TableMetaInfo.searchByName(tableName);
         }
-        if (tableData != null && tableData.created) {
+        if (tableMetaInfo != null && tableMetaInfo.created) {
             return;
         }
         Statement statement = Statement
                 .rawStatement("DROP TABLE IF EXISTS {0}", tableName);
         exec(statement);
-        if (tableData != null) {
-            tableData.created = false;
+        if (tableMetaInfo != null) {
+            tableMetaInfo.created = false;
         }
     }
 
@@ -399,8 +399,8 @@ public class DatabaseOperator extends SQLiteOpenHelper {
         if (newVersion > oldVersion && clearTablesWhenUpdated) {
             dropAllTables();
         }
-        if (onDatabaseUpgradedListener != null) {
-            onDatabaseUpgradedListener.onUpgraded(this, oldVersion, newVersion);
+        if (onDatabaseUpgradeListener != null) {
+            onDatabaseUpgradeListener.onUpgraded(this, oldVersion, newVersion);
         }
     }
 }

@@ -2,7 +2,7 @@ package com.imkiva.quickdroid;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.annotation.UiThreadTest;
+import android.test.UiThreadTest;
 
 import org.junit.Test;
 

@@ -1,4 +1,4 @@
-package com.imkiva.quickdroid.reflection;
+package com.imkiva.quickdroid.reflection.core;
 
 import org.junit.Assert;
 import org.junit.Test;

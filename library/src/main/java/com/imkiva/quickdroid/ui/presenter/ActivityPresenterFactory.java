@@ -2,7 +2,7 @@ package com.imkiva.quickdroid.ui.presenter;
 
 import android.support.annotation.NonNull;
 
-import com.imkiva.quickdroid.reflection.Reflector;
+import com.imkiva.quickdroid.reflection.core.Reflector;
 import com.imkiva.quickdroid.ui.PresentedActivity;
 import com.imkiva.quickdroid.ui.annotation.BindPresenter;
 

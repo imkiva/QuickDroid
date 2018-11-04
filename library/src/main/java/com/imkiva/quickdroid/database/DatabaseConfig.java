@@ -8,7 +8,7 @@ public class DatabaseConfig {
     private String databaseName;
     private int databaseVersion;
 
-    private OnDatabaseUpgradedListener onDatabaseUpgradedListener;
+    private OnDatabaseUpgradeListener onDatabaseUpgradeListener;
     private boolean clearTablesWhenUpdated = false;
 
     public DatabaseConfig(String databaseName, int databaseVersion) {
@@ -40,11 +40,11 @@ public class DatabaseConfig {
         this.clearTablesWhenUpdated = clearTablesWhenUpdated;
     }
 
-    public void setOnDatabaseUpgradedListener(OnDatabaseUpgradedListener onDatabaseUpgradedListener) {
-        this.onDatabaseUpgradedListener = onDatabaseUpgradedListener;
+    public void setOnDatabaseUpgradeListener(OnDatabaseUpgradeListener onDatabaseUpgradeListener) {
+        this.onDatabaseUpgradeListener = onDatabaseUpgradeListener;
     }
 
-    public OnDatabaseUpgradedListener getOnDatabaseUpgradedListener() {
-        return onDatabaseUpgradedListener;
+    public OnDatabaseUpgradeListener getOnDatabaseUpgradeListener() {
+        return onDatabaseUpgradeListener;
     }
 }

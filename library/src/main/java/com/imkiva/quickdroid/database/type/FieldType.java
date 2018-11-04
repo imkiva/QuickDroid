@@ -4,7 +4,7 @@ import com.imkiva.quickdroid.database.annotation.NotNull;
 import com.imkiva.quickdroid.database.annotation.PrimaryKey;
 import com.imkiva.quickdroid.database.annotation.Skip;
 import com.imkiva.quickdroid.functional.When;
-import com.imkiva.quickdroid.reflection.ReflectionHelper;
+import com.imkiva.quickdroid.reflection.core.ReflectionHelper;
 
 import java.lang.reflect.Field;
 

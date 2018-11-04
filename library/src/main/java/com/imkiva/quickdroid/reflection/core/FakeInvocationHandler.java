@@ -1,4 +1,4 @@
-package com.imkiva.quickdroid.reflection;
+package com.imkiva.quickdroid.reflection.core;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;

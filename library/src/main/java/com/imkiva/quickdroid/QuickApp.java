@@ -6,7 +6,7 @@ import android.content.pm.PackageManager;
 import android.widget.Toast;
 
 import com.imkiva.quickdroid.functional.QSupplier;
-import com.imkiva.quickdroid.reflection.Reflector;
+import com.imkiva.quickdroid.reflection.core.Reflector;
 
 /**
  * The application helper.

@@ -2,7 +2,7 @@ package com.imkiva.quickdroid;
 
 import com.imkiva.quickdroid.database.DatabaseConfig;
 import com.imkiva.quickdroid.database.DatabaseOperator;
-import com.imkiva.quickdroid.database.OnDatabaseUpgradedListener;
+import com.imkiva.quickdroid.database.OnDatabaseUpgradeListener;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -49,10 +49,10 @@ public final class QuickDatabase {
     /**
      * Open a database with callbacks.
      *
-     * @param upgradedListener {@link OnDatabaseUpgradedListener}
+     * @param upgradedListener {@link OnDatabaseUpgradeListener}
      * @return Database operator
      */
-    public static DatabaseOperator open(OnDatabaseUpgradedListener upgradedListener) {
+    public static DatabaseOperator open(OnDatabaseUpgradeListener upgradedListener) {
         return open(DatabaseOperator.DEFAULT_DATABASE_NAME, upgradedListener);
     }
 
@@ -63,9 +63,9 @@ public final class QuickDatabase {
      * @param upgradedListener{@link OnDatabaseUpgradedListener}
      * @return Database operator
      */
-    public static DatabaseOperator open(String databaseName, OnDatabaseUpgradedListener upgradedListener) {
+    public static DatabaseOperator open(String databaseName, OnDatabaseUpgradeListener upgradedListener) {
         DatabaseConfig config = new DatabaseConfig(databaseName, QuickApp.getAppVersionCode());
-        config.setOnDatabaseUpgradedListener(upgradedListener);
+        config.setOnDatabaseUpgradeListener(upgradedListener);
         return open(config);
     }
 
