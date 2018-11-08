@@ -12,6 +12,6 @@ public class MirroredClassTest {
     public void testMirror() {
         TargetMirror mirror = QuickReflection.mirror(TargetMirror.class);
         mirror.constructor();
-        System.out.println(mirror.getSomething());
+        mirror.constructor("hello");
     }
 }
