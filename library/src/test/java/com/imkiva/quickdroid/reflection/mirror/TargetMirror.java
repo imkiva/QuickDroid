@@ -9,10 +9,10 @@ import com.imkiva.quickdroid.reflection.Mirrored;
 @Mirrored("com.imkiva.quickdroid.reflection.ReflectTargetClass")
 public interface TargetMirror {
     @Constructor
-    void newInstance();
+    void constructor();
 
     @Constructor
-    void newInstance(String something);
+    void constructor(String something);
 
     String getSomething();
 }
